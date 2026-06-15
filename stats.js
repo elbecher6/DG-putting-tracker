@@ -121,6 +121,7 @@ const Stats = (() => {
       </div>
 
       ${!hasData ? renderEmpty() : `
+        ${renderHeatMap(data)}
         ${renderLineChart(data)}
         ${renderTable(data)}
       `}
@@ -132,78 +133,90 @@ const Stats = (() => {
   }
 
   // ── Heat Map ──
-  function renderHeatMap(data) {
-    const maxTotal = Math.max(...data.map(d => d.total), 1);
-    const CIRCLE_R = 22;
-    const GAP = 14;
-    const SVG_W = 340;
-    const ROW_H = CIRCLE_R * 2 + GAP;
-    const SVG_H = data.length * ROW_H + 24;
-    const LABEL_W = 44;
-    const CX = LABEL_W + CIRCLE_R + 8;
+function renderHeatMap(data) {
+  const SVG_W = 340;
+  const SVG_H = 300;
 
-    const rows = data.map((d, i) => {
-      const cy = 12 + i * ROW_H + CIRCLE_R;
+  const CX = SVG_W / 2;
+  const CY = SVG_H / 2 + 10;
+
+  const MAX_R = 120;
+
+  // Draw largest ring first so smaller rings appear on top
+  const rings = [...data]
+    .sort((a, b) => b.dist_ft - a.dist_ft)
+    .map(d => {
       const pct = d.total > 0 ? d.made / d.total : null;
-      const volOpacity = d.total > 0 ? 0.15 + 0.85 * (d.total / maxTotal) : 0.04;
 
-      const accColor  = pct === null ? '#2d4f2d' : pctToColor(pct);
-      // Use hex-with-opacity trick: pre-bake gold at various opacities
-      const volAlpha  = Math.round(volOpacity * 255).toString(16).padStart(2, '0');
-      const volColor  = `#c8a84b${volAlpha}`;
+      const r = (d.dist_ft / 66) * MAX_R;
 
-      // Semicircle: draw from top-center, arc to bottom-center
-      // Left = counterclockwise (sweep-flag 0), Right = clockwise (sweep-flag 1)
-      const tx = CX, ty1 = cy - CIRCLE_R, ty2 = cy + CIRCLE_R;
-      const leftPath  = `M ${tx} ${ty1} A ${CIRCLE_R} ${CIRCLE_R} 0 0 0 ${tx} ${ty2} Z`;
-      const rightPath = `M ${tx} ${ty1} A ${CIRCLE_R} ${CIRCLE_R} 0 0 1 ${tx} ${ty2} Z`;
+      const fill = pct === null
+        ? '#444444'
+        : pctToColor(pct);
 
-      const pctLabel = pct !== null ? `${Math.round(pct * 100)}%` : '-';
-      const volLabel = `${d.total}`;
+      return `
+        <circle
+          cx="${CX}"
+          cy="${CY}"
+          r="${r}"
+          fill="${fill}"
+          stroke="#1a2e1a"
+          stroke-width="2"
+        />
+      `;
+    })
+    .join('');
 
-      return `<g>
-          <text x="${LABEL_W - 4}" y="${cy + 5}" text-anchor="end"
-                fill="#9db89d" font-size="12" font-weight="600">${d.dist_ft}ft</text>
-          <circle cx="${CX}" cy="${cy}" r="${CIRCLE_R}" fill="#1e3a1e" stroke="#3a5c3a" stroke-width="1"/>
-          <path d="${leftPath}" fill="${accColor}"/>
-          <path d="${rightPath}" fill="${volColor}"/>
-          <line x1="${CX}" y1="${cy - CIRCLE_R}" x2="${CX}" y2="${cy + CIRCLE_R}"
-                stroke="#1a2e1a" stroke-width="1.5"/>
-          <text x="${CX - CIRCLE_R / 2 - 1}" y="${cy + 5}" text-anchor="middle"
-                fill="white" font-size="10" font-weight="700">${pctLabel}</text>
-          <text x="${CX + CIRCLE_R / 2 + 1}" y="${cy + 5}" text-anchor="middle"
-                fill="white" font-size="10" font-weight="700">${volLabel}</text>
-        </g>`;
-    }).join('');
+  // Distance labels
+  const labels = data.map(d => {
+    const pct = d.total > 0
+      ? `${Math.round((d.made / d.total) * 100)}%`
+      : '--';
 
-    const legendY = SVG_H - 4;
+    const r = (d.dist_ft / 66) * MAX_R;
 
     return `
-      <p class="section-label">Distance heat map</p>
-      <div class="stats-card">
-        <svg viewBox="0 0 ${SVG_W} ${SVG_H}" xmlns="http://www.w3.org/2000/svg"
-             style="width:100%;display:block;overflow:visible">
-          ${rows}
-          <!-- Legend -->
-          <text x="${CX - CIRCLE_R}" y="${legendY}" text-anchor="middle"
-                fill="#9db89d" font-size="10">accuracy</text>
-          <text x="${CX + CIRCLE_R}" y="${legendY}" text-anchor="middle"
-                fill="#9db89d" font-size="10">attempts</text>
-        </svg>
-      </div>
-    `;
-  }
+      <g>
+        
 
-  function pctToColor(pct) {
-    // 0 → red, 0.5 → yellow, 1 → green
-    let r, g, b = 0;
-    if (pct < 0.5) {
-      r = 200; g = Math.round(pct * 2 * 174);
-    } else {
-      r = Math.round((1 - pct) * 2 * 200); g = 174;
-    }
-    return `rgb(${r},${g},${b})`;
-  }
+        <text
+          x="${CX + r}"
+          y="${CY + 4}"
+          fill="#f0ead8"
+          font-size="10"
+          font-weight="600">
+          ${d.dist_ft}ft
+        </text>
+      </g>
+    `;
+  }).join('');
+
+  return `
+    <p class="section-label">Distance heat map</p>
+
+    <div class="stats-card">
+      <svg
+        viewBox="0 0 ${SVG_W} ${SVG_H}"
+        xmlns="http://www.w3.org/2000/svg"
+        style="width:100%;display:block">
+
+        ${rings}
+
+        
+
+        
+
+        ${labels}
+
+      </svg>
+    </div>
+  `;
+}
+
+function pctToColor(pct) {
+  const hue = pct * 120;
+  return `hsl(${hue}, 85%, 45%)`;
+}
 
   // ── Line Chart ──
   function renderLineChart(data) {
