@@ -121,7 +121,6 @@ const Stats = (() => {
       </div>
 
       ${!hasData ? renderEmpty() : `
-        ${renderHeatMap(data)}
         ${renderLineChart(data)}
         ${renderTable(data)}
       `}
