@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#1a2e1a" />
   <title>Putt Tracker</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -29,12 +29,13 @@
           <span class="btn-label">Practice</span>
           <span class="btn-sub">Drill mode</span>
         </button>
-        <button class="btn-primary" onclick="nav('screen-round')">
+        <button class="btn-primary" onclick="nav('screen-round'); Round.init()">
           <span class="btn-label">In Round</span>
           <span class="btn-sub">Live tracking</span>
         </button>
-        <button class="btn-secondary" onclick="nav('screen-stats')">
+        <button class="btn-primary" onclick="nav('screen-stats'); Stats.init()">
           <span class="btn-label">Stats</span>
+          <span class="btn-sub">Your putting history</span>
         </button>
       </div>
     </div>
@@ -72,7 +73,7 @@
         <h2>In Round</h2>
       </div>
       <div class="screen-body" id="round-body">
-        <p class="coming-soon">Coming soon</p>
+        <!-- rendered by round.js -->
       </div>
     </div>
 
@@ -83,7 +84,7 @@
         <h2>Stats</h2>
       </div>
       <div class="screen-body" id="stats-body">
-        <p class="coming-soon">Coming soon</p>
+        <!-- rendered by stats.js -->
       </div>
     </div>
 
@@ -92,6 +93,8 @@
   <script src="storage.js"></script>
   <script src="nav.js"></script>
   <script src="practice.js"></script>
+  <script src="round.js"></script>
+  <script src="stats.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -1,12 +1,14 @@
-const CACHE = 'putt-tracker-v1';
+const CACHE = 'putt-tracker-v2';
 const ASSETS = [
   '/',
   '/index.html',
-  '/css/style.css',
-  '/js/storage.js',
-  '/js/nav.js',
-  '/js/practice.js',
-  '/js/app.js',
+  '/style.css',
+  '/storage.js',
+  '/nav.js',
+  '/practice.js',
+  '/round.js',
+  '/stats.js',
+  '/app.js',
   '/manifest.json'
 ];
 
