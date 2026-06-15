@@ -1,31 +1,97 @@
-const CACHE = 'putt-tracker-v1';
-const ASSETS = [
-  '/',
-  '/index.html',
-  '/css/style.css',
-  '/js/storage.js',
-  '/js/nav.js',
-  '/js/practice.js',
-  '/js/app.js',
-  '/manifest.json'
-];
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Putt Tracker" />
+  <meta name="theme-color" content="#1a2e1a" />
+  <title>Putt Tracker</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
 
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
-  self.skipWaiting();
-});
+  <!-- ── APP SHELL ── -->
+  <div id="app">
 
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
-});
+    <!-- HOME SCREEN -->
+    <div id="screen-home" class="screen active">
+      <div class="home-header">
+        <div class="disc-icon">⬤</div>
+        <h1>Putt<br>Tracker</h1>
+        <p class="tagline">Track every putt. Own every circle.</p>
+      </div>
+      <div class="home-buttons">
+        <button class="btn-primary" onclick="nav('screen-practice-setup')">
+          <span class="btn-label">Practice</span>
+          <span class="btn-sub">Drill mode</span>
+        </button>
+        <button class="btn-primary" onclick="nav('screen-round')">
+          <span class="btn-label">In Round</span>
+          <span class="btn-sub">Live tracking</span>
+        </button>
+        <button class="btn-secondary" onclick="nav('screen-stats')">
+          <span class="btn-label">Stats</span>
+        </button>
+      </div>
+    </div>
 
-self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
-  );
-});
+    <!-- PRACTICE SETUP -->
+    <div id="screen-practice-setup" class="screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="nav('screen-home')">‹ Back</button>
+        <h2>Practice Setup</h2>
+      </div>
+      <div class="screen-body" id="practice-setup-body">
+        <!-- rendered by practice.js -->
+      </div>
+    </div>
+
+    <!-- PRACTICE SESSION -->
+    <div id="screen-practice-session" class="screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="endPracticeSession()">‹ End Session</button>
+        <h2>Practice</h2>
+        <div class="unit-toggle">
+          <button id="unit-steps-btn" class="unit-btn active" onclick="setUnit('steps')">Steps</button>
+          <button id="unit-feet-btn" class="unit-btn" onclick="setUnit('feet')">Feet</button>
+        </div>
+      </div>
+      <div class="screen-body" id="practice-session-body">
+        <!-- rendered by practice.js -->
+      </div>
+    </div>
+
+    <!-- IN ROUND -->
+    <div id="screen-round" class="screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="nav('screen-home')">‹ Back</button>
+        <h2>In Round</h2>
+      </div>
+      <div class="screen-body" id="round-body">
+        <p class="coming-soon">Coming soon</p>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div id="screen-stats" class="screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="nav('screen-home')">‹ Back</button>
+        <h2>Stats</h2>
+      </div>
+      <div class="screen-body" id="stats-body">
+        <p class="coming-soon">Coming soon</p>
+      </div>
+    </div>
+
+  </div><!-- /#app -->
+
+  <script src="js/storage.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/practice.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
