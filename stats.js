@@ -337,14 +337,57 @@ function pctToColor(pct) {
           <span class="stat-detail">${totalMade}/${totalAtts}</span>
           <span class="stat-pct" style="color:var(--cream)">${totalPct}%</span>
         </div>
+		
+        <button onclick="Stats.exportCSV()" style="width:100%;margin-top:14px;padding:12px;border-radius:8px;background:#2d4f2d;border:1px solid rgba(255,255,255,0.12);color:#9db89d;font-size:0.85rem;font-weight:700;cursor:pointer;">&#8681; Export CSV</button>
       </div>
     `;
   }
+  
+  // Export table as .csv
+  function exportCSV() {
+  var data = getData();
+  var modeName = mode === 'round' ? 'In Round' : 'Practice';
+  var rangeLabel = RANGES.find(function(r){ return r.key === range; }).label;
+
+  var rows = [
+    ['Putt Tracker Export'],
+    ['Mode: ' + modeName],
+    ['Range: ' + rangeLabel],
+    ['Generated: ' + new Date().toLocaleDateString()],
+    [],
+    ['Distance (ft)', 'Made', 'Total', 'Percentage']
+  ];
+
+  data.forEach(function(d) {
+    var pct = d.total > 0 ? Math.round((d.made / d.total) * 100) + '%' : '-';
+    rows.push([d.dist_ft, d.made, d.total, pct]);
+  });
+
+  var tm = data.reduce(function(s,d){ return s + d.made; }, 0);
+  var tt = data.reduce(function(s,d){ return s + d.total; }, 0);
+  rows.push([]);
+  rows.push(['Total', tm, tt, tt > 0 ? Math.round((tm/tt)*100) + '%' : '-']);
+
+  var csv = rows.map(function(row) {
+    return row.map(function(cell) {
+      var s = String(cell);
+      return s.includes(',') ? '"' + s + '"' : s;
+    }).join(',');
+  }).join('\n');
+
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'putts-' + mode + '-' + range + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
   // ── Public setters ──
   function setMode(m) { mode = m; render(); }
   function setRange(r) { range = r; render(); }
   function init() { render(); }
 
-  return { init, render, setMode, setRange };
+  return { init, render, setMode, setRange, exportCSV };
 })();
