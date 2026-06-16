@@ -7,27 +7,27 @@ const Stats = (() => {
 
   // ── State ──
   let mode = 'round';          // 'round' | 'practice'
-  let range = '30d';           // 'all' | '7d' | '30d' | '90d'
 
-  const RANGES = [
-    { key: '7d',  label: '7 days' },
-    { key: '30d', label: '30 days' },
-    { key: '90d', label: '90 days' },
-    { key: 'all', label: 'All time' },
-  ];
-
-  // ── Date helpers ──
-  function cutoffDate(rangeKey) {
-    if (rangeKey === 'all') return null;
-    const days = parseInt(rangeKey);
+  // Default: start of current year → today
+  function todayStr() {
+    return new Date().toISOString().slice(0, 10);
+  }
+  function yesterdayStr() {
     const d = new Date();
-    d.setDate(d.getDate() - days);
-    return d;
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().slice(0, 10);
   }
 
-  function withinRange(isoDate, cutoff) {
-    if (!cutoff) return true;
-    return new Date(isoDate) >= cutoff;
+  let startDate = yesterdayStr();
+  let endDate   = todayStr();
+
+  // ── Date helpers ──
+  function withinRange(isoDate) {
+    const d = new Date(isoDate);
+    const start = new Date(startDate);
+    const end   = new Date(endDate);
+    end.setHours(23, 59, 59, 999); // include the full end day
+    return d >= start && d <= end;
   }
 
   // ── Data aggregation ──
@@ -35,11 +35,10 @@ const Stats = (() => {
   // Returns [{dist_ft, made, total}] sorted by dist
   function getRoundData() {
     const sessions = Storage.getRoundPutts();
-    const cutoff = cutoffDate(range);
     const byDist = {};
 
     sessions.forEach(session => {
-      if (!withinRange(session.date, cutoff)) return;
+      if (!withinRange(session.date)) return;
       (session.putts || []).forEach(p => {
         if (!byDist[p.dist_ft]) byDist[p.dist_ft] = { dist_ft: p.dist_ft, made: 0, total: 0 };
         byDist[p.dist_ft].made  += p.made ? 1 : 0;
@@ -54,11 +53,10 @@ const Stats = (() => {
   // Practice distances are in steps; bucket them into nearest 11ft increment
   function getPracticeData() {
     const sessions = Storage.getPracticeSessions();
-    const cutoff = cutoffDate(range);
     const byDist = {};
 
     sessions.forEach(session => {
-      if (!withinRange(session.date, cutoff)) return;
+      if (!withinRange(session.date)) return;
       (session.putts || []).forEach(p => {
         // Convert steps to feet, snap to nearest 11ft bucket
         const feet = p.dist * STEPS_TO_FEET;
@@ -112,12 +110,22 @@ const Stats = (() => {
                 onclick="Stats.setMode('practice')">Practice</button>
       </div>
 
-      <!-- Date range pills -->
-      <div class="pill-group" style="margin-bottom:24px">
-        ${RANGES.map(r => `
-          <button class="pill ${range === r.key ? 'selected' : ''}"
-                  onclick="Stats.setRange('${r.key}')">${r.label}</button>
-        `).join('')}
+      <!-- Date range pickers -->
+      <div class="date-range-row">
+        <div class="date-field">
+          <label class="date-label">From</label>
+          <input type="date" class="date-input" id="stats-start"
+                 value="${startDate}" max="${endDate}"
+                 onchange="Stats.setDates(this.value, document.getElementById('stats-end').value)" />
+        </div>
+        <div class="date-range-sep">→</div>
+        <div class="date-field">
+          <label class="date-label">To</label>
+          <input type="date" class="date-input" id="stats-end"
+                 value="${endDate}" min="${startDate}" max="${todayStr()}"
+                 onchange="Stats.setDates(document.getElementById('stats-start').value, this.value)" />
+        </div>
+        <button class="date-all-btn" onclick="Stats.setAllTime()">All</button>
       </div>
 
       ${!hasData ? renderEmpty() : `
@@ -343,11 +351,10 @@ function pctToColor(pct) {
     `;
   }
   
-  // Export table as .csv
   function exportCSV() {
-  var data = getData();
-  var modeName = mode === 'round' ? 'In Round' : 'Practice';
-  var rangeLabel = RANGES.find(function(r){ return r.key === range; }).label;
+    const data = getData();
+    const modeName   = mode === 'round' ? 'In Round' : 'Practice';
+    const rangeLabel = startDate + ' to ' + endDate;
 
   var rows = [
     ['Putt Tracker Export'],
@@ -379,15 +386,33 @@ function pctToColor(pct) {
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement('a');
   a.href     = url;
-  a.download = 'putts-' + mode + '-' + range + '.csv';
+  a.download = `putts-${mode}-${startDate}-${endDate}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
 
   // ── Public setters ──
   function setMode(m) { mode = m; render(); }
-  function setRange(r) { range = r; render(); }
+  function setDates(s, e) {
+    if (s) startDate = s;
+    if (e) endDate   = e;
+    // Keep start <= end
+    if (startDate > endDate) endDate = startDate;
+    render();
+  }
+  function setAllTime() {
+    // Find earliest session date across both modes
+    const allDates = [
+      ...Storage.getRoundPutts().map(s => s.date),
+      ...Storage.getPracticeSessions().map(s => s.date),
+    ];
+    startDate = allDates.length > 0
+      ? allDates.reduce((a, b) => a < b ? a : b).slice(0, 10)
+      : yearStartStr();
+    endDate = todayStr();
+    render();
+  }
   function init() { render(); }
 
-  return { init, render, setMode, setRange, exportCSV };
+  return { init, render, setMode, setDates, setAllTime, exportCSV };
 })();

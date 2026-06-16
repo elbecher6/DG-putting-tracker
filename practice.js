@@ -1,18 +1,18 @@
 // practice.js — practice mode logic
 
 // ── Constants ──
-const STEPS_TO_FEET = 2.5;   // 1 step ≈ 2.5 feet (adjust if preferred)
-const SET_SIZES = [3, 5, 10];
+const STEPS_TO_FEET = 3;   // 1 step ≈ 3 feet (adjust if preferred)
+const SET_SIZES = [2, 3, 5, 10];
 const MIN_DIST_STEPS = 5;
-const MAX_DIST_STEPS = 40;
+const MAX_DIST_STEPS = 25;
 
 // ── State ──
 const Practice = (() => {
   let unit = 'steps';          // 'steps' | 'feet'
   let setup = {
     setSize: 5,
-    minDist: 10,
-    maxDist: 25,
+    minDist: 5,
+    maxDist: 12,
   };
   let session = {
     active: false,
@@ -128,7 +128,7 @@ const Practice = (() => {
   function renderSessionPutt() {
     const body = document.getElementById('practice-session-body');
     const dist = session.distances[session.current];
-    const setNum = session.current + 1;
+    const setNum = session.current;
     const totalSets = session.distances.length;
 
     // progress bar fills based on sets completed
@@ -139,7 +139,7 @@ const Practice = (() => {
         <div class="progress-bar-wrap">
           <div class="progress-bar-fill" style="width:${pct}%"></div>
         </div>
-        <span class="progress-label">Set ${setNum}</span>
+        <span class="progress-label">${setNum} sets (${session.current * setup.setSize} putts)</span>
       </div>
 
       <div class="distance-card">

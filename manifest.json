@@ -2,7 +2,7 @@
   "name": "Putt Tracker",
   "short_name": "Putt Tracker",
   "description": "Disc golf putting stats tracker",
-  "start_url": "/DG-putting-tracker/",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#1a2e1a",
   "theme_color": "#1a2e1a",

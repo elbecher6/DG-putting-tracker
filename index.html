@@ -37,6 +37,10 @@
           <span class="btn-label">Stats</span>
           <span class="btn-sub">Your putting history</span>
         </button>
+		<button class="btn-primary" onclick="nav('screen-sessions'); Sessions.init()">
+          <span class="btn-label">Sessions</span>
+          <span class="btn-sub">Your putting history</span>
+        </button>
       </div>
     </div>
 
@@ -87,6 +91,17 @@
         <!-- rendered by stats.js -->
       </div>
     </div>
+	
+	<!-- SESSIONS -->
+    <div id="screen-sessions" class="screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="nav('screen-home')">‹ Back</button>
+        <h2>Stats</h2>
+      </div>
+      <div class="screen-body" id="sessions-body">
+        <!-- rendered by sessions.js -->
+      </div>
+    </div>
 
   </div><!-- /#app -->
 
@@ -95,6 +110,7 @@
   <script src="practice.js"></script>
   <script src="round.js"></script>
   <script src="stats.js"></script>
+  <script src="sessions.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

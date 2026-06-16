@@ -43,7 +43,7 @@ const Round = (() => {
         ${ROUND_DISTANCES_FT.map(d => `
           <button class="dist-tile ${state.selectedDist === d ? 'selected' : ''}"
                   onclick="Round.selectDist(${d})">
-            <span class="dist-tile-num">${d}</span>
+            <span class="dist-tile-num">${d-11} - ${d}</span>
             <span class="dist-tile-unit">ft</span>
           </button>
         `).join('')}
@@ -77,7 +77,7 @@ const Round = (() => {
             </div>
           `).join('')}
         </div>
-      ` : `<p class="round-empty">Select a distance, then tap Made or Miss.</p>`}
+      ` : `<p class="round-empty">Select a distance, then tap Miss or Made.</p>`}
 
       <!-- End round -->
       ${log.length > 0 ? `

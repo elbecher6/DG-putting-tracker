@@ -712,3 +712,54 @@ input[type=range]::-webkit-slider-thumb {
   font-size: 0.92rem;
   line-height: 1.6;
 }
+
+/* ── DATE RANGE PICKER ── */
+.date-range-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+.date-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.date-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--card-border);
+  background: var(--green-mid);
+  color: var(--cream);
+  font-size: 0.88rem;
+  font-family: inherit;
+  -webkit-appearance: none;
+}
+.date-input:focus {
+  outline: none;
+  border-color: var(--green-bright);
+}
+.date-all-btn {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.date-all-btn:active {
+  background: var(--green-mid);
+  color: var(--cream);
+}
