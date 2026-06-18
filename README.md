@@ -8,5 +8,5 @@ Has four pages
 4. session
 
 List of things to fix
-1. stats page: date range a little funky in mobile
+
 
