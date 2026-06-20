@@ -12,7 +12,7 @@ const Practice = (() => {
   let setup = {
     setSize: 5,
     minDist: 5,
-    maxDist: 12,
+    maxDist: 11,
   };
   let session = {
     active: false,

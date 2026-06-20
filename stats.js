@@ -5,7 +5,7 @@ const ALL_ROUND_DISTS = [11, 22, 33, 44, 55, 66];
 const Stats = (() => {
 
   // ── State ──
-  let mode      = 'round';   // 'round' | 'practice'
+  let mode      = 'practice';   // 'round' | 'practice'
   let practUnit = 'steps';   // 'steps' | 'feet'  (practice tab only)
 
   function todayStr() {
