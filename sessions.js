@@ -2,7 +2,7 @@
 
 const Sessions = (() => {
 
-  let mode = 'round'; // 'round' | 'practice'
+  let mode = 'practice'; // 'round' | 'practice'
 
   // ── Helpers ──
   function formatDate(isoStr) {
