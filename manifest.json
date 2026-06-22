@@ -18,5 +18,10 @@
       "sizes": "512x512",
       "type": "image/png"
     }
+	{
+      "src": "DG-icon.png",
+      "sizes": "1254x1254",
+      "type": "image/png"
+    }
   ]
 }
