@@ -38,9 +38,10 @@
           <span class="btn-sub">Your putting history</span>
         </button>
 		<button class="btn-primary" onclick="nav('screen-sessions'); Sessions.init()">
-          <span class="btn-label">Sessions</span>
-          <span class="btn-sub">Your putting sessions</span>
-        </button>
+			<span class="btn-label">Sessions</span>
+			<span class="btn-sub">Browse &amp; manage saved data</span>
+      </button>
+      <button class="about-link-btn" onclick="nav('screen-about')">About &amp; Feedback</button>
       </div>
     </div>
 
@@ -102,6 +103,32 @@
         <!-- rendered by sessions.js -->
       </div>
     </div>
+	
+	  <!-- ABOUT -->
+  <div id="screen-about" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="nav('screen-home')">&#8249; Back</button>
+      <h2>About</h2>
+    </div>
+    <div class="screen-body">
+      <p class="section-label">About me</p>
+      <div class="about-card">
+        <p>I'm just an Illinois disc golfer who likes stats and is competent with a computer.</p>
+      </div>
+ 
+      <p class="section-label" style="margin-top:28px">Comments &amp; suggestions</p>
+      <div class="about-card">
+        <p>Have an idea, found a bug, or just want to say hi? Shoot me an email:</p>
+        <a class="about-contact" href="mailto:DG.puttTracker@gmail.com">DG.puttTracker@gmail.com</a>
+      </div>
+ 
+      <p class="section-label" style="margin-top:28px">Tip the developer</p>
+      <div class="about-card">
+        <p>If Putt Tracker has helped your game, tips are always appreciated on Venmo:</p>
+        <span class="about-contact about-venmo">@elbecher6</span>
+      </div>
+    </div>
+  </div>
 
   </div><!-- /#app -->
 
