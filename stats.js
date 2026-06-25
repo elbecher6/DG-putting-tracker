@@ -206,7 +206,7 @@ const Stats = (() => {
               opacity="0.7">${label}</text>`;
     }).join('');
  
-    // Colour scale legend bar at bottom
+    // Color scale legend bar at bottom
     const BAR_W = 120, BAR_H = 8;
     const BAR_X = (SVG_W - BAR_W) / 2;
     const BAR_Y = SVG_H - 22;
@@ -404,9 +404,12 @@ const Stats = (() => {
       ...Storage.getPracticeSessions().map(s => s.date),
     ];
     startDate = allDates.length > 0
-      ? allDates.reduce((a, b) => a < b ? a : b).slice(0, 10)
-      : yearStartStr();
-    endDate = todayStr();
+	? (() => {
+      const d = new Date(allDates.reduce((a, b) => a < b ? a : b));
+      d.setDate(d.getDate() - 1);
+      return d.toISOString().slice(0, 10);
+    })()
+	: yearStartStr();
     render();
   }
   function init() { render(); }

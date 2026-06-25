@@ -3,7 +3,7 @@
 // ── Constants ──
 const STEPS_TO_FEET = 3;   // 1 step ≈ 3 feet (adjust if preferred)
 const SET_SIZES = [2, 3, 5, 10];
-const MIN_DIST_STEPS = 5;
+const MIN_DIST_STEPS = 4;
 const MAX_DIST_STEPS = 25;
 
 // ── State ──

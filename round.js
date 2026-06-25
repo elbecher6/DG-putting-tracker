@@ -10,6 +10,15 @@ const Round = (() => {
     selectedDist: null,
   };
 
+  // Persist the in-progress round so a reload can recover it
+  function persist() {
+    if (!state.active) return;
+    Storage.setActiveRound({
+      putts: state.putts,
+      selectedDist: state.selectedDist,
+    });
+  }
+
   // ── Render main round screen ──
   function render() {
     const body = document.getElementById('round-body');
@@ -88,6 +97,7 @@ const Round = (() => {
 
   function selectDist(d) {
     state.selectedDist = (state.selectedDist === d) ? null : d;  // toggle off if tapped again
+    persist();
     render();
   }
 
@@ -98,6 +108,8 @@ const Round = (() => {
       made,
       timestamp: new Date().toISOString(),
     });
+	state.selectedDist = null;
+    persist();
     // Keep distance selected for quick repeat logging
     render();
     // Flash feedback
@@ -115,6 +127,7 @@ const Round = (() => {
   function undo() {
     if (state.putts.length === 0) return;
     state.putts.pop();
+    persist();
     render();
   }
 
@@ -175,6 +188,7 @@ const Round = (() => {
       putts: state.putts,
     };
     Storage.saveRoundPutt(record);
+    Storage.clearActiveRound();
 
     // Reset
     state.putts = [];
@@ -189,7 +203,17 @@ const Round = (() => {
   }
 
   function init() {
+    // Resume an in-progress round if one was persisted (e.g. after a reload)
+    const saved = Storage.getActiveRound();
+    if (saved && saved.putts && saved.putts.length > 0) {
+      state.putts = saved.putts;
+      state.selectedDist = saved.selectedDist || null;
+    } else {
+      state.putts = [];
+      state.selectedDist = null;
+    }
     state.active = true;
+    persist();
     render();
   }
 

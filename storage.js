@@ -18,6 +18,14 @@ const Storage = (() => {
     }
   }
 
+  function remove(key) {
+    try {
+      localStorage.removeItem(PREFIX + key);
+    } catch (e) {
+      console.warn('Storage remove failed', e);
+    }
+  }
+
   // Append a record to an array stored at key
   function append(key, record) {
     const arr = get(key) || [];
@@ -45,5 +53,21 @@ const Storage = (() => {
     append('round_putts', putt);
   }
 
-  return { get, set, getPracticeSessions, savePracticeSession, getRoundPutts, saveRoundPutt };
+  // Active (in-progress) round — persisted after every putt so a reload can resume it
+  function getActiveRound() {
+    return get('active_round');
+  }
+  function setActiveRound(round) {
+    set('active_round', round);
+  }
+  function clearActiveRound() {
+    remove('active_round');
+  }
+
+  return {
+    get, set,
+    getPracticeSessions, savePracticeSession,
+    getRoundPutts, saveRoundPutt,
+    getActiveRound, setActiveRound, clearActiveRound,
+  };
 })();
