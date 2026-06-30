@@ -152,6 +152,13 @@ const Stats = (() => {
         </div>
         <button class="date-all-btn" onclick="Stats.setAllTime()">All</button>
       </div>
+	  
+	  <button onclick="nav('screen-more'); More.init();"
+         style="width:100%;margin-bottom:20px;padding:12px;border-radius:10px;
+                 background:rgba(200,168,75,0.14);border:1.5px solid var(--basket);
+                 color:var(--basket);font-size:0.88rem;font-weight:800;cursor:pointer;">
+        &#9728; More Fun Stats
+      </button>
 
       ${!hasData
         ? `<p class="stats-empty">No ${mode === 'round' ? 'in-round' : 'practice'} data yet for this range.<br>Go sink some putts!</p>`
@@ -354,6 +361,7 @@ const Stats = (() => {
         </button>
       </div>`;
   }
+  
 
   // ── Export ──
   function exportCSV() {
