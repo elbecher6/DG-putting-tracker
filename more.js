@@ -9,6 +9,18 @@ const More = (() => {
 
   const C1_MAX_FT = 33; // putts at or inside this distance count as C1
   const C2_MAX_FT = 66; // putts beyond C1 and up to this distance count as C2
+  
+  // In Round buttons store the MAX of their bucket (11, 22, 33, 44, 55, 66),
+  // representing ranges of 0–11, 12–22, 23–33, etc. For "fun stats" purposes
+  // we want the midpoint of that range as a more representative distance,
+  // rather than always using the (overstated) upper bound.
+  const ROUND_BUCKET_MAX = [11, 22, 33, 44, 55, 66];
+  function roundBucketMidpoint(maxFt) {
+    const idx = ROUND_BUCKET_MAX.indexOf(maxFt);
+    if (idx === -1) return maxFt; // unrecognized value, fall back to raw
+    const lowerBound = idx === 0 ? 0 : ROUND_BUCKET_MAX[idx - 1];
+    return (lowerBound + maxFt) / 2;
+  }
 
   // ── Helpers: normalize every putt (round + practice) into a common shape ──
   // { dist_ft, made, dateStr (YYYY-MM-DD), monthKey (YYYY-MM), source ('round'|'practice') }
@@ -20,7 +32,8 @@ const More = (() => {
       const day = (session.date || '').slice(0, 10);
       const month = day.slice(0, 7);
       (session.putts || []).forEach(p => {
-        out.push({ dist_ft: p.dist_ft, made: !!p.made, dateStr: day, monthKey: month, source: 'round' });
+        const distFt = roundBucketMidpoint(p.dist_ft);
+        out.push({ dist_ft: distFt, made: !!p.made, dateStr: day, monthKey: month, source: 'round' });
       });
     });
 
