@@ -321,6 +321,10 @@ const Stats = (() => {
   function renderTable(data) {
     const withData = data.filter(d => d.total > 0);
     if (withData.length === 0) return '';
+	
+	// C1 = distances <= 33ft (in feet), or <= 11 steps in practice steps mode
+    const c1Threshold = (mode === 'practice' && practUnit === 'steps') ? 11 : 33;
+    const c2Threshold = (mode === 'practice' && practUnit === 'steps') ? 22 : 66;
 
     // For in-round show all fixed bins; for practice only show rows with data
     const rows = (mode === 'round' ? data : withData).map(d => {
@@ -340,19 +344,33 @@ const Stats = (() => {
         </div>`;
     }).join('');
 
-    const totalMade = data.reduce((s, d) => s + d.made, 0);
-    const totalAtts = data.reduce((s, d) => s + d.total, 0);
-    const totalPct  = totalAtts > 0 ? Math.round((totalMade / totalAtts) * 100) : 0;
+     // ── Summary rows: C1, C2, Total ──
+    function summaryRow(label, subset) {
+      const made = subset.reduce((s, d) => s + d.made, 0);
+      const atts = subset.reduce((s, d) => s + d.total, 0);
+      const pct  = atts > 0 ? Math.round((made / atts) * 100) : null;
+      const color = pct === null ? 'var(--text-dim)'
+        : pct >= 70 ? 'var(--hit)' : pct >= 40 ? 'var(--basket)' : 'var(--miss)';
+      return `
+        <div class="stat-row stat-total-row">
+          <span class="stat-dist">${label}</span>
+          <span class="stat-detail">${atts > 0 ? made + '/' + atts : '—'}</span>
+          <span class="stat-pct" style="color:${pct !== null ? color : 'var(--text-dim)'}">
+            ${pct !== null ? pct + '%' : '—'}
+          </span>
+        </div>`;
+    }
+
+    const c1Data    = data.filter(d => d.dist <= c1Threshold);
+    const c2Data    = data.filter(d => d.dist > c1Threshold && d.dist <= c2Threshold);
 
     return `
       <p class="section-label" style="margin-top:24px">By distance</p>
       <div class="stats-card">
         ${rows}
-        <div class="stat-row stat-total-row">
-          <span class="stat-dist">Total</span>
-          <span class="stat-detail">${totalMade}/${totalAtts}</span>
-          <span class="stat-pct" style="color:var(--cream)">${totalPct}%</span>
-        </div>
+        ${summaryRow('C1', c1Data)}
+        ${summaryRow('C2', c2Data)}
+        ${summaryRow('Total', data)}
         <button onclick="Stats.exportCSV()"
                 style="width:100%;margin-top:14px;padding:12px;border-radius:8px;
                        background:#2d4f2d;border:1px solid rgba(255,255,255,0.12);
