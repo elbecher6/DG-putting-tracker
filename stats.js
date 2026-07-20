@@ -117,7 +117,7 @@ const Stats = (() => {
     // Unit toggle only shown in practice mode
     const unitToggle = mode === 'practice' ? `
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-        <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#9db89d">Unit</span>
+        <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#fff">Unit</span>
         <div class="unit-toggle" style="display:inline-flex;width:auto">
           <button id="pstat-steps-btn" class="unit-btn ${practUnit === 'steps' ? 'active' : ''}"
                   onclick="Stats.setUnit('steps')">Steps</button>
@@ -251,55 +251,81 @@ const Stats = (() => {
     const withData = data.filter(d => d.total > 0);
     if (withData.length < 2) return '';
 
+    // ── Key change: x position based on actual distance value, not array index ──
+    // This means a gap between dist 6 and dist 8 renders as twice as wide as
+    // a gap between dist 5 and dist 6, accurately showing the distance axis.
+    const distMin = data[0].dist;
+    const distMax = data[data.length - 1].dist;
+    const distRange = distMax - distMin || 1; // guard against single-point edge case
+
+    function distX(dist) {
+      const w = CW - PAD.left - PAD.right;
+      return PAD.left + ((dist - distMin) / distRange) * w;
+    }
+
     const n = data.length;
 
-    const gridLines = [0, 25, 50, 75, 100].map(v => {
+    const gridLines = [0, 20, 40, 60, 80, 100].map(v => {
       const y = chartY(v);
       return `
         <line x1="${PAD.left}" y1="${y}" x2="${CW - PAD.right}" y2="${y}"
-              stroke="#2d4f2d" stroke-width="1"/>
+              stroke=var(--green-light) stroke-width="1"/>
         <text x="${PAD.left - 4}" y="${y + 4}" text-anchor="end"
-              fill="#9db89d" font-size="10">${v}%</text>`;
+              fill=var(--basket) font-size="10">${v}%</text>`;
     }).join('');
 
-    // For many practice distances, only label every Nth tick to avoid overlap
+    // Thin every-distance tick marks along x-axis so the scale is visible
+    // Labels only shown every Nth tick to avoid overlap when many distances exist
     const labelStep = n > 10 ? Math.ceil(n / 8) : 1;
     const xLabels = data.map((d, i) => {
-      if (i % labelStep !== 0 && i !== n - 1) return '';
-      return `<text x="${chartX(i, n)}" y="${CH - PAD.bottom + 14}"
-                    text-anchor="middle" fill="#9db89d" font-size="9">${distTick(d)}</text>`;
+      const x = distX(d.dist);
+      // Always draw a small tick; only print the text label on every Nth distance
+      const label = (i % labelStep === 0 || i === n - 1)
+        ? `<text x="${x}" y="${CH - PAD.bottom + 14}"
+                 text-anchor="middle" fill=var(--basket) font-size="9">${distTick(d)}</text>`
+        : '';
+      return `<line x1="${x}" y1="${chartY(0)}" x2="${x}" y2="${chartY(0) + 3}"
+                    stroke=var(--basket) stroke-width="1"/>
+              ${label}`;
     }).join('');
 
-    const points = data.map((d, i) => {
-      if (d.total === 0) return null;
-      return `${chartX(i, n)},${chartY((d.made / d.total) * 100)}`;
-    }).filter(Boolean);
+    // Only connect dots that have data; gaps where total===0 break the line naturally
+    // Build segments: groups of consecutive data points separated by empty bins
+    const segments = [];
+    let current = [];
+    data.forEach(d => {
+      if (d.total > 0) {
+        current.push(`${distX(d.dist)},${chartY((d.made / d.total) * 100)}`);
+      } else {
+        if (current.length >= 2) segments.push(current);
+        current = [];
+      }
+    });
+    if (current.length >= 2) segments.push(current);
 
-    const polyline = points.length >= 2
-      ? `<polyline points="${points.join(' ')}" fill="none" stroke="#4a8c3f"
-                   stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`
-      : '';
+    const polylines = segments.map(pts =>
+      `<polyline points="${pts.join(' ')}" fill="none" stroke=var(--green-bright)
+                 stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`
+    ).join('');
 
-    // Only show dot labels when there aren't too many points
+    // Area fill: one polygon per segment
+    const areas = segments.map(pts => {
+      const firstX = pts[0].split(',')[0];
+      const lastX  = pts[pts.length - 1].split(',')[0];
+      return `<polygon points="${firstX},${chartY(0)} ${pts.join(' ')} ${lastX},${chartY(0)}"
+                       fill=var(--green-bright) opacity="0.4"/>`;
+    }).join('');
+
     const showLabels = n <= 12;
-    const dots = data.map((d, i) => {
+    const dots = data.map(d => {
       if (!d.total) return '';
       const pct = (d.made / d.total) * 100;
-      const x = chartX(i, n), y = chartY(pct);
+      const x = distX(d.dist), y = chartY(pct);
       return `<circle cx="${x}" cy="${y}" r="${n > 12 ? 3 : 5}"
-                      fill="#4a8c3f" stroke="#1a2e1a" stroke-width="2"/>
+                      fill=var(--green-bright) stroke="#1a2e1a" stroke-width="2"/>
               ${showLabels ? `<text x="${x}" y="${y - 10}" text-anchor="middle"
-                fill="#f0ead8" font-size="10" font-weight="700">${Math.round(pct)}%</text>` : ''}`;
+                fill=var(--basket) font-size="10" font-weight="700">${Math.round(pct)}%</text>` : ''}`;
     }).join('');
-
-    const areaPoints = [
-      `${chartX(0, n)},${chartY(0)}`,
-      ...data.map((d, i) => d.total ? `${chartX(i, n)},${chartY((d.made / d.total) * 100)}` : null).filter(Boolean),
-      `${chartX(n - 1, n)},${chartY(0)}`,
-    ];
-    const area = points.length >= 2
-      ? `<polygon points="${areaPoints.join(' ')}" fill="#2d5a28" opacity="0.4"/>`
-      : '';
 
     return `
       <p class="section-label" style="margin-top:24px">Accuracy by distance</p>
@@ -308,10 +334,10 @@ const Stats = (() => {
              style="width:100%;display:block">
           ${gridLines}
           <line x1="${PAD.left}" y1="${chartY(0)}" x2="${CW - PAD.right}" y2="${chartY(0)}"
-                stroke="#3a5c3a" stroke-width="1"/>
+                stroke=var(--green-bright) stroke-width="1"/>
           ${xLabels}
-          ${area}
-          ${polyline}
+          ${areas}
+          ${polylines}
           ${dots}
         </svg>
       </div>`;
@@ -335,7 +361,7 @@ const Stats = (() => {
           <span class="stat-pct">—</span>
         </div>`;
       const pct   = Math.round((d.made / d.total) * 100);
-      const color = pct >= 70 ? 'var(--hit)' : pct >= 40 ? 'var(--basket)' : 'var(--miss)';
+      const color = pct >= 70 ? 'var(--hit)' : pct >= 40 ? 'var(--yellow)' : 'var(--miss)';
       return `
         <div class="stat-row">
           <span class="stat-dist">${distLabel(d)}</span>
@@ -350,7 +376,7 @@ const Stats = (() => {
       const atts = subset.reduce((s, d) => s + d.total, 0);
       const pct  = atts > 0 ? Math.round((made / atts) * 100) : null;
       const color = pct === null ? 'var(--text-dim)'
-        : pct >= 70 ? 'var(--hit)' : pct >= 40 ? 'var(--basket)' : 'var(--miss)';
+        : pct >= 70 ? 'var(--hit)' : pct >= 40 ? 'var(--yellow)' : 'var(--miss)';
       return `
         <div class="stat-row stat-total-row">
           <span class="stat-dist">${label}</span>
@@ -362,6 +388,7 @@ const Stats = (() => {
     }
 
     const c1Data    = data.filter(d => d.dist <= c1Threshold);
+	const c1xData = mode === 'round' ? data.filter(d => d.dist > 11 && d.dist <= 33) : [];
     const c2Data    = data.filter(d => d.dist > c1Threshold && d.dist <= c2Threshold);
 
     return `
@@ -369,12 +396,13 @@ const Stats = (() => {
       <div class="stats-card">
         ${rows}
         ${summaryRow('C1', c1Data)}
+		${mode === 'round' ? summaryRow('C1X', c1xData) : ''}
         ${summaryRow('C2', c2Data)}
         ${summaryRow('Total', data)}
         <button onclick="Stats.exportCSV()"
                 style="width:100%;margin-top:14px;padding:12px;border-radius:8px;
-                       background:#2d4f2d;border:1px solid rgba(255,255,255,0.12);
-                       color:#9db89d;font-size:0.85rem;font-weight:700;cursor:pointer;">
+                       background:--green-bright;border:1px solid rgba(255,255,255,0.12);
+                       color:#fff;font-size:0.85rem;font-weight:700;cursor:pointer;">
           &#8681; Export CSV
         </button>
       </div>`;

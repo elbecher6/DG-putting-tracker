@@ -158,17 +158,44 @@ const Round = (() => {
         const pct = Math.round((m / t) * 100);
         return `
           <div class="summary-row">
-            <span class="summary-dist">${d} ft</span>
+            <span class="summary-dist">${d-11}-${d} ft</span>
             <span class="summary-makes">${m}/${t}</span>
             <span class="summary-pct">${pct}%</span>
           </div>
         `;
       }).join('');
+	  
+	// C1X = 11ft–33ft (the 11ft and 22ft buckets) and C2 33-66ft
+    const c1xDists = ROUND_DISTANCES_FT.filter(d => d > 11 && d <= 33);
+    const c1xMade  = c1xDists.reduce((s, d) => s + byDist[d].made, 0);
+    const c1xTotal = c1xDists.reduce((s, d) => s + byDist[d].total, 0);
+	const c2Dists = ROUND_DISTANCES_FT.filter(d => d > 33);
+    const c2Made  = c2Dists.reduce((s, d) => s + byDist[d].made, 0);
+    const c2Total = c2Dists.reduce((s, d) => s + byDist[d].total, 0);
+    const c1xRow   = c1xTotal > -1 ? `
+		<div style="width:50%; margin:1px auto 0;">
+			<div class="summary-row">
+				<span class="summary-dist">C1X</span>
+				<span class="summary-makes">${c1xMade}/${c1xTotal}</span>
+				<span class="summary-pct">${Math.round((c1xMade / c1xTotal) * 100)}%</span>
+			</div>
+		</div>` : '';
+	const c2Row   = c2Total > -1 ? `
+		<div style="width:50%; margin:1px auto 0;">
+			<div class="summary-row">
+				<span class="summary-dist">C2</span>
+				<span class="summary-makes">${c2Made}/${c2Total}</span>
+				<span class="summary-pct">${Math.round((c2Made / c2Total) * 100)}%</span>
+			</div>
+		</div>` : '';
+	  
 
     body.innerHTML = `
       <div class="summary-total">
         <div class="summary-total-pct">${overallPct}%</div>
         <div class="summary-total-label">${made} of ${total} putts</div>
+		${c1xRow}
+		${c2Row}
       </div>
       <div class="summary-card">
         <div class="summary-title">By Distance</div>

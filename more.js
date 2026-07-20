@@ -183,7 +183,7 @@ const More = (() => {
   // ── Card: overall percentage ──
   function renderOverallCard(overall) {
     const pctColor = overall.pct === null ? 'var(--text-dim)'
-      : overall.pct >= 70 ? 'var(--hit)' : overall.pct >= 40 ? 'var(--basket)' : 'var(--miss)';
+      : overall.pct >= 70 ? 'var(--hit)' : overall.pct >= 40 ? 'var(--yellow)' : 'var(--miss)';
     return `
       <p class="section-label">Overall putting percentage</p>
       <div class="stats-card" style="text-align:center;padding:24px">
@@ -209,7 +209,7 @@ const More = (() => {
         <div class="stat-row" style="border-bottom:none">
           <span class="stat-dist">Made</span>
           <span class="stat-detail">${formatMiles(madeFt)}</span>
-          <span class="stat-pct" style="color:var(--hit)">${formatFt(madeFt)}</span>
+          <span class="stat-pct" style="color:var(--basket)">${formatFt(madeFt)}</span>
         </div>
       </div>`;
   }
@@ -234,38 +234,38 @@ const More = (() => {
     function cy(pct) { return PT + (1 - pct / 100) * (CH - PT - PB); }
 
     const grid = [0, 25, 50, 75, 100].map(v => `
-      <line x1="${PL}" y1="${cy(v)}" x2="${CW - PR}" y2="${cy(v)}" stroke="#2d4f2d" stroke-width="1"/>
-      <text x="${PL - 4}" y="${cy(v) + 4}" text-anchor="end" fill="#9db89d" font-size="10">${v}%</text>
+      <line x1="${PL}" y1="${cy(v)}" x2="${CW - PR}" y2="${cy(v)}" stroke=var(--green-light) stroke-width="1"/>
+      <text x="${PL - 4}" y="${cy(v) + 4}" text-anchor="end" fill=var(--basket) font-size="10">${v}%</text>
     `).join('');
 
     const labelStep = n > 8 ? Math.ceil(n / 6) : 1;
     const xLabels = months.map((m, i) => {
       if (i % labelStep !== 0 && i !== n - 1) return '';
       return `<text x="${cx(i)}" y="${CH - PB + 14}" text-anchor="middle"
-                    fill="#9db89d" font-size="9">${monthLabel(m.month)}</text>`;
+                    fill=var(--basket) font-size="9">${monthLabel(m.month)}</text>`;
     }).join('');
 
     const points = months.map((m, i) => `${cx(i)},${cy(m.pct)}`);
-    const polyline = `<polyline points="${points.join(' ')}" fill="none" stroke="#4a8c3f"
+    const polyline = `<polyline points="${points.join(' ')}" fill="none" stroke=var(--green-bright)
                                 stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
 
     const showLabels = n <= 10;
     const dots = months.map((m, i) => {
       const x = cx(i), y = cy(m.pct);
-      return `<circle cx="${x}" cy="${y}" r="${n > 10 ? 3 : 5}" fill="#4a8c3f" stroke="#1a2e1a" stroke-width="2"/>
+      return `<circle cx="${x}" cy="${y}" r="${n > 10 ? 3 : 5}" fill=var(--green-bright) stroke="#1a2e1a" stroke-width="2"/>
               ${showLabels ? `<text x="${x}" y="${y - 10}" text-anchor="middle"
                 fill="#f0ead8" font-size="10" font-weight="700">${m.pct}%</text>` : ''}`;
     }).join('');
 
     const areaPoints = [`${cx(0)},${cy(0)}`, ...points, `${cx(n - 1)},${cy(0)}`];
-    const area = `<polygon points="${areaPoints.join(' ')}" fill="#2d5a28" opacity="0.4"/>`;
+    const area = `<polygon points="${areaPoints.join(' ')}" fill=var(--green-bright) opacity="0.4"/>`;
 
     return `
       <p class="section-label" style="margin-top:24px">Percentage over time</p>
       <div class="stats-card">
         <svg viewBox="0 0 ${CW} ${CH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">
           ${grid}
-          <line x1="${PL}" y1="${cy(0)}" x2="${CW - PR}" y2="${cy(0)}" stroke="#3a5c3a" stroke-width="1"/>
+          <line x1="${PL}" y1="${cy(0)}" x2="${CW - PR}" y2="${cy(0)}" stroke=var(--green-bright) stroke-width="1"/>
           ${xLabels}
           ${area}
           ${polyline}

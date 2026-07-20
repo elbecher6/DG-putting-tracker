@@ -7,6 +7,7 @@
   --cream:        #f0ead8;
   --cream-dim:    #d8cfb8;
   --basket:       #c8a84b;   /* chain gold */
+  --yellow:       #c8a84b;
   --miss:         #c0392b;
   --hit:          #27ae60;
   --text-main:    #f0ead8;
@@ -15,6 +16,26 @@
   --card-border:  rgba(255,255,255,0.12);
   --radius:       14px;
   --radius-sm:    8px;
+}
+
+:root[data-theme="uiuc"] {
+
+  --green-deep: 	#13294B;  /* Illinois Blue */
+  --green-mid: 		#1F4E8C;
+  --green-bright: 	#2E6BB3;
+  --green-light: 	#4D8FD8;
+
+  --cream: 			#f7f7f7;
+  --cream-dim: 		#d8d8d8;
+
+  --basket: 		#FF5F05;  /* Illinois Orange */
+  --yellow:       	#c8a84b;
+
+  --text-main: 		#ffffff;
+  --text-dim: 		#c7d5e8;
+
+  --card-bg: 		rgba(255,255,255,.08);
+  --card-border:	rgba(255,255,255,.16);
 }
 
 /* ── RESET & BASE ── */
@@ -117,10 +138,23 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   flex-direction: column;
   gap: 8px;
 }
-.disc-icon {
-  font-size: 2.2rem;
-  color: var(--basket);
-  line-height: 1;
+.disc-icon{
+    width:42px;
+    height:42px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--basket);
+    font-size:2.2rem;
+    line-height:1;
+    font-weight:900;
+}
+
+.block-i{
+    font-family:Georgia, serif;
+    font-size:2.8rem;
+    letter-spacing:-2px;
+    font-weight:900;
 }
 .home-header h1 {
   font-size: 3rem;
@@ -344,8 +378,8 @@ input[type=range]::-webkit-slider-thumb {
   -webkit-tap-highlight-color: transparent;
 }
 .makes-btn.selected {
-  background: var(--hit);
-  border-color: var(--hit);
+  background: var(--basket);
+  border-color: var(--basket);
   color: #fff;
 }
 .makes-btn:active { transform: scale(0.94); }
@@ -828,3 +862,58 @@ input[type=range]::-webkit-slider-thumb {
   font-weight: 800;
 }
 .resume-banner-btn:active { opacity: 0.85; }
+
+/* ---- Theme Toggle ---- */
+
+.theme-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+}
+
+.theme-switch{
+    position:relative;
+    width:54px;
+    height:30px;
+}
+
+.theme-switch input{
+    display:none;
+}
+
+.theme-slider{
+    position:absolute;
+    inset:0;
+    background:var(--green-mid);
+    border-radius:999px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.theme-slider::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:24px;
+    height:24px;
+
+    left:3px;
+    top:3px;
+
+    border-radius:50%;
+
+    background:white;
+
+    transition:.2s;
+}
+
+.theme-switch input:checked + .theme-slider{
+    background:var(--basket);
+}
+
+.theme-switch input:checked + .theme-slider::before{
+    transform:translateX(24px);
+}
