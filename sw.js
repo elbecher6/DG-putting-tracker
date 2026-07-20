@@ -1,4 +1,4 @@
-const CACHE = 'putt-tracker-v2';
+const CACHE = 'putt-tracker-v9';
 const ASSETS = [
   './',
   './index.html',
@@ -21,16 +21,22 @@ self.addEventListener('install', e => {
       .then(c => c.addAll(ASSETS))
       .catch(err => console.warn('SW cache addAll failed', err))
   );
+  // Take over immediately without waiting for old tabs to close
   self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
+    // Delete all old caches, then force-reload any open tabs so they
+    // immediately get the new files rather than waiting for a manual refresh
+    caches.keys()
+      .then(keys =>
+        Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+      )
+      .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then(clients => clients.forEach(client => client.navigate(client.url)))
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', e => {
