@@ -1,5 +1,6 @@
-const CACHE = 'putt-tracker-v9';
-const ASSETS = [
+const CACHE = 'putt-tracker-v10';
+
+const APP_SHELL = [
   './',
   './index.html',
   './style.css',
@@ -15,51 +16,106 @@ const ASSETS = [
   './DG-icon.png'
 ];
 
-self.addEventListener('install', e => {
-  e.waitUntil(
+// Install
+self.addEventListener('install', event => {
+
+  event.waitUntil(
     caches.open(CACHE)
-      .then(c => c.addAll(ASSETS))
-      .catch(err => console.warn('SW cache addAll failed', err))
+      .then(cache => cache.addAll(APP_SHELL))
   );
-  // Take over immediately without waiting for old tabs to close
+
   self.skipWaiting();
+
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    // Delete all old caches, then force-reload any open tabs so they
-    // immediately get the new files rather than waiting for a manual refresh
-    caches.keys()
-      .then(keys =>
-        Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+// Activate
+self.addEventListener('activate', event => {
+
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(key => key !== CACHE)
+          .map(key => caches.delete(key))
       )
-      .then(() => self.clients.claim())
-      .then(() => self.clients.matchAll({ type: 'window' }))
-      .then(clients => clients.forEach(client => client.navigate(client.url)))
+    ).then(() => self.clients.claim())
   );
+
 });
 
-self.addEventListener('fetch', e => {
-  // Only handle GET requests; let everything else pass through normally
-  if (e.request.method !== 'GET') return;
+// Fetch
+self.addEventListener('fetch', event => {
 
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(response => {
-        // Cache a copy of newly-fetched same-origin files for next time offline
-        if (response.ok && e.request.url.startsWith(self.location.origin)) {
+  if (event.request.method !== 'GET') return;
+
+  const request = event.request;
+
+  //
+  // HTML / Navigation
+  // Always try the network first so new deployments are picked up quickly.
+  //
+  if (request.mode === 'navigate') {
+
+    event.respondWith(
+
+      fetch(request)
+        .then(response => {
+
           const copy = response.clone();
-          caches.open(CACHE).then(c => c.put(e.request, copy));
-        }
-        return response;
-      }).catch(() => {
-        // Offline and not cached — for navigations, fall back to the cached app shell
-        if (e.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-        throw new Error('Offline and not cached');
-      });
+
+          caches.open(CACHE).then(cache => {
+            cache.put('./index.html', copy);
+          });
+
+          return response;
+
+        })
+        .catch(async () => {
+
+          return (
+            await caches.match('./index.html')
+            || Response.error()
+          );
+
+        })
+
+    );
+
+    return;
+
+  }
+
+  //
+  // Everything else
+  // Serve cache immediately while refreshing in the background.
+  //
+  event.respondWith(
+
+    caches.match(request).then(cached => {
+
+      const networkFetch = fetch(request)
+        .then(response => {
+
+          if (
+            response.ok &&
+            request.url.startsWith(self.location.origin)
+          ) {
+
+            caches.open(CACHE).then(cache => {
+              cache.put(request, response.clone());
+            });
+
+          }
+
+          return response;
+
+        })
+        .catch(() => cached);
+
+      return cached || networkFetch;
+
     })
+
   );
+
 });
