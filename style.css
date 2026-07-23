@@ -8,7 +8,7 @@
   --cream-dim:    #d8cfb8;
   --basket:       #c8a84b;   /* chain gold */
   --yellow:       #c8a84b;
-  --miss:         #c0392b;
+  --miss:         #ff4020;
   --hit:          #27ae60;
   --text-main:    #f0ead8;
   --text-dim:     #9db89d;
@@ -57,9 +57,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   width: 100%;
   max-width: 430px;
   margin: 0 auto;
-  height: 100dvh;
+  min-height: 100vh;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* ── SCREENS ── */

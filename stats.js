@@ -351,12 +351,19 @@ const Stats = (() => {
 	// C1 = distances <= 33ft (in feet), or <= 11 steps in practice steps mode
     const c1Threshold = (mode === 'practice' && practUnit === 'steps') ? 11 : 33;
     const c2Threshold = (mode === 'practice' && practUnit === 'steps') ? 22 : 66;
+	
+	// Compute fixed bins for in-round data
+	function displayLabel(d) {
+		if (mode !== 'round') return distLabel(d);
+		const lower = Math.max(0, d.dist - 11);
+		return `${lower}–${d.dist} ft`;
+	}
 
     // For in-round show all fixed bins; for practice only show rows with data
     const rows = (mode === 'round' ? data : withData).map(d => {
       if (d.total === 0) return `
         <div class="stat-row stat-row-empty">
-          <span class="stat-dist">${distLabel(d)}</span>
+          <span class="stat-dist">${displayLabel(d)}</span>
           <span class="stat-detail">—</span>
           <span class="stat-pct">—</span>
         </div>`;
@@ -364,7 +371,7 @@ const Stats = (() => {
       const color = pct >= 70 ? 'var(--hit)' : pct >= 40 ? 'var(--yellow)' : 'var(--miss)';
       return `
         <div class="stat-row">
-          <span class="stat-dist">${distLabel(d)}</span>
+          <span class="stat-dist">${displayLabel(d)}</span>
           <span class="stat-detail">${d.made}/${d.total}</span>
           <span class="stat-pct" style="color:${color}">${pct}%</span>
         </div>`;
